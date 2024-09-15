@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Transformation and Analysis Case</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline-block;
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        code, pre {
+            background-color: #f4f4f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: block;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Data Transformation and Analysis Case</h1>
+</header>
+
+<div class="container">
+    <nav>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#setup">Setup</a></li>
+            <li><a href="#test-case-1">Test Case 1</a></li>
+            <li><a href="#test-case-2">Test Case 2</a></li>
+            <li><a href="#test-case-3">Test Case 3</a></li>
+            <li><a href="#data-quality">Data Quality</a></li>
+            <li><a href="#conclusion">Conclusion</a></li>
+        </ul>
+    </nav>
+
+    <section id="introduction">
+        <h2>Introduction</h2>
+        <p>This documentation provides a step-by-step guide for performing data analysis using SQL and Python (SQLAlchemy). The dataset is loaded into a MySQL database and analyzed to answer the following business questions:</p>
+        <ul>
+            <li><strong>Channel Analysis</strong>: Calculate the total revenue generated from each <code>channelGrouping</code> for the top 5 countries producing the highest revenue.</li>
+            <li><strong>User Behavior Analysis</strong>: Derive user behavior insights based on <code>timeOnSite</code>, <code>pageviews</code>, and <code>sessionQualityDim</code>.</li>
+            <li><strong>Product Performance</strong>: Analyze product performance based on revenue, quantity sold, and refund amounts. Flag products with refund amounts exceeding 10% of their total revenue.</li>
+        </ul>
+    </section>
+
+    <section id="prerequisites">
+        <h2>Prerequisites</h2>
+        <p>Ensure you have the following prerequisites before running the code:</p>
+        <ul>
+            <li>Python: Ensure that you have Python installed.</li>
+            <li>MySQL Database: Set up a MySQL instance where the dataset will be imported.</li>
+            <li>Required Libraries:
+                <ul>
+                    <li><code>pandas</code></li>
+                    <li><code>sqlalchemy</code></li>
+                    <li><code>pymysql</code></li>
+                    <li><code>matplotlib</code> (optional for visualization)</li>
+                    <li><code>seaborn</code> (optional for visualization)</li>
+                </ul>
+            </li>
+        </ul>
+        <p>You can install the required Python libraries using the following command:</p>
+        <pre><code>pip install pandas sqlalchemy pymysql matplotlib seaborn</code></pre>
+    </section>
+
+    <section id="setup">
+        <h2>Setup</h2>
+
+        <h3>Step 1: MySQL Connection Setup</h3>
+        <p>Make sure you have a MySQL instance running locally or on a server. Update the connection details (user, password, host, database) to match your MySQL setup.</p>
+        <pre><code># Import required libraries
+import pandas as pd
+from sqlalchemy import create_engine
+
+# Setup MySQL connection
+user = 'root'
+password = 'mypassword'  # Replace with your MySQL password
+host = 'localhost'
+database = 'ecommerceNTX'
+
+# Create the engine
+engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}/{database}')
+conn = engine.connect()</code></pre>
+
+        <h3>Step 2: Loading CSV Data into MySQL</h3>
+        <p>After setting up the connection, load the provided CSV dataset into a MySQL table.</p>
+        <pre><code># Load the CSV file into a Pandas DataFrame
+csv_file = 'Soal 1 - Data Transformation and Analysis Case.csv'
+data = pd.read_csv(csv_file)
+
+# Upload the DataFrame to MySQL table (replace 'ecommerce_sessions' with your table name)
+data.to_sql('ecommerce_sessions', conn, index=False, if_exists='replace')</code></pre>
+    </section>
+
+    <section id="test-case-1">
+        <h2>Test Case 1: Channel Analysis</h2>
+        <p><strong>Objective</strong>: Calculate the total revenue generated from each <code>channelGrouping</code> for the top 5 countries producing the highest revenue.</p>
+
+        <h3>SQL Query:</h3>
+        <pre><code>WITH Country_Revenue AS (
+    SELECT 
+        country,
+        SUM(CAST(totalTransactionRevenue AS UNSIGNED)) AS total_country_revenue
+    FROM ecommerce_sessions
+    WHERE totalTransactionRevenue IS NOT NULL
+    GROUP BY country
+    ORDER BY total_country_revenue DESC
+    LIMIT 5
+)
+
+SELECT 
+    e.channelGrouping,
+    e.country,
+    SUM(CAST(e.totalTransactionRevenue AS UNSIGNED)) AS total_revenue
+FROM ecommerce_sessions e
+INNER JOIN Country_Revenue cr
+    ON e.country = cr.country
+WHERE e.totalTransactionRevenue IS NOT NULL
+GROUP BY e.channelGrouping, e.country
+ORDER BY total_revenue DESC;</code></pre>
+
+        <h3>Python Code:</h3>
+        <pre><code># Query for Test Case 1: Channel Analysis
+query = '''
+WITH Country_Revenue AS (
+    SELECT 
+        country,
+        SUM(CAST(totalTransactionRevenue AS UNSIGNED)) AS total_country_revenue
+    FROM ecommerce_sessions
+    WHERE totalTransactionRevenue IS NOT NULL
+    GROUP BY country
+    ORDER BY total_country_revenue DESC
+    LIMIT 5
+)
+
+SELECT 
+    e.channelGrouping,
+    e.country,
+    SUM(CAST(e.totalTransactionRevenue AS UNSIGNED)) AS total_revenue
+FROM ecommerce_sessions e
+INNER JOIN Country_Revenue cr
+    ON e.country = cr.country
+WHERE e.totalTransactionRevenue IS NOT NULL
+GROUP BY e.channelGrouping, e.country
+ORDER BY total_revenue DESC;
+'''
+
+# Execute the query and load the result into a Pandas DataFrame
+channel_analysis = pd.read_sql(query, conn)
+
+# Show the result
+print(channel_analysis)</code></pre>
+    </section>
+
+    <section id="test-case-2">
+        <h2>Test Case 2: User Behavior Analysis</h2>
+        <p><strong>Objective</strong>: Derive insights into user behavior. Identify users who spend above-average time on the site but view fewer pages than the average user.</p>
+
+        <h3>SQL Query:</h3>
+        <pre><code>WITH User_Metrics AS (
+    SELECT 
+        fullVisitorId,
+        AVG(CAST(timeOnSite AS UNSIGNED)) AS avg_timeOnSite,
+        AVG(CAST(pageviews AS UNSIGNED)) AS avg_pageviews,
+        AVG(CAST(sessionQualityDim AS UNSIGNED)) AS avg_sessionQualityDim
+    FROM ecommerce_sessions
+    WHERE timeOnSite IS NOT NULL AND pageviews IS NOT NULL
+    GROUP BY fullVisitorId
+),
+Average_Metrics AS (
+    SELECT 
+        AVG(avg_timeOnSite) AS overall_avg_timeOnSite,
+        AVG(avg_pageviews) AS overall_avg_pageviews
+    FROM User_Metrics
+)
+
+SELECT 
+    u.fullVisitorId,
+    u.avg_timeOnSite,
+    u.avg_pageviews,
+    u.avg_sessionQualityDim
+FROM User_Metrics u, Average_Metrics a
+WHERE u.avg_timeOnSite > a.overall_avg_timeOnSite
+AND u.avg_pageviews < a.overall_avg_pageviews;</code></pre>
+
+        <h3>Python Code:</h3>
+        <pre><code># Query for Test Case 2: User Behavior Analysis
+query = '''
+WITH User_Metrics AS (
+    SELECT 
+        fullVisitorId,
+        AVG(CAST(timeOnSite AS UNSIGNED)) AS avg_timeOnSite,
+        AVG(CAST(pageviews AS UNSIGNED)) AS avg_pageviews,
+        AVG(CAST(sessionQualityDim AS UNSIGNED)) AS avg_sessionQualityDim
+    FROM ecommerce_sessions
+    WHERE timeOnSite IS NOT NULL AND pageviews IS NOT NULL
+    GROUP BY fullVisitorId
+),
+Average_Metrics AS (
+    SELECT 
+        AVG(avg_timeOnSite) AS overall_avg_timeOnSite,
+        AVG(avg_pageviews) AS overall_avg_pageviews
+    FROM User_Metrics
+)
+
+SELECT 
+    u.fullVisitorId,
+    u.avg_timeOnSite,
+    u.avg_pageviews,
+    u.avg_sessionQualityDim
+FROM User_Metrics u, Average_Metrics a
+WHERE u.avg_timeOnSite > a.overall_avg_timeOnSite
+AND u.avg_pageviews < a.overall_avg_pageviews;
+'''
+
+# Execute the query and load the result into a Pandas DataFrame
+user_behavior_analysis = pd.read_sql(query, conn)
+
+# Show the result
+print(user_behavior_analysis)</code></pre>
+    </section>
+
+    <section id="test-case-3">
+        <h2>Test Case 3: Product Performance</h2>
+        <p><strong>Objective</strong>: Calculate product performance based on revenue, quantity sold, and refund amounts. Rank the products and flag any with refunds exceeding 10%.</p>
+
+        <h3>SQL Query:</h3>
+        <pre><code>WITH Product_Sales AS (
+    SELECT 
+        v2ProductName,
+        SUM(CAST(productRevenue AS UNSIGNED)) AS total_revenue,
+        SUM(CAST(productQuantity AS UNSIGNED)) AS total_quantity_sold,
+        SUM(CAST(productRefundAmount AS UNSIGNED)) AS total_refund
+    FROM ecommerce_sessions
+    WHERE productRevenue IS NOT NULL
+    GROUP BY v2ProductName
+)
+
+SELECT 
+    v2ProductName,
+    total_revenue,
+    total_quantity_sold,
+    total_refund,
+    (total_revenue - total_refund) AS net_revenue,
+    CASE 
+        WHEN total_refund > (total_revenue * 0.1) THEN 'Refund > 10%'
+        ELSE 'Refund <= 10%'
+    END AS refund_flag
+FROM Product_Sales
+ORDER BY net_revenue DESC;</code></pre>
+
+        <h3>Python Code:</h3>
+        <pre><code># Query for Test Case 3: Product Performance
+query = '''
+WITH Product_Sales AS (
+    SELECT 
+        v2ProductName,
+        SUM(CAST(productRevenue AS UNSIGNED)) AS total_revenue,
+        SUM(CAST(productQuantity AS UNSIGNED)) AS total_quantity_sold,
+        SUM(CAST(productRefundAmount AS UNSIGNED)) AS total_refund
+    FROM ecommerce_sessions
+    WHERE productRevenue IS NOT NULL
+    GROUP BY v2ProductName
+)
+
+SELECT 
+    v2ProductName,
+    total_revenue,
+    total_quantity_sold,
+    total_refund,
+    (total_revenue - total_refund) AS net_revenue,
+    CASE 
+        WHEN total_refund > (total_revenue * 0.1) THEN 'Refund > 10%'
+        ELSE 'Refund <= 10%'
+    END AS refund_flag
+FROM Product_Sales
+ORDER BY net_revenue DESC;
+'''
+
+# Execute the query and load the result into a Pandas DataFrame
+product_performance = pd.read_sql(query, conn)
+
+# Show the result
+print(product_performance)</code></pre>
+    </section>
+
+    <section id="data-quality">
+        <h2>Data Quality Considerations</h2>
+        <ul>
+            <li><strong>Missing Values</strong>: Some columns such as <code>timeOnSite</code>, <code>pageviews</code>, and <code>productRefundAmount</code> may contain null values. Handle these appropriately when performing calculations.</li>
+            <li><strong>Data Types</strong>: Ensure that fields like <code>productRevenue</code> and <code>productQuantity</code> are cast correctly to numeric types to avoid data type mismatch issues in MySQL queries.</li>
+        </ul>
+    </section>
+
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>This documentation outlines how to perform SQL-based data analysis using MySQL and Python (SQLAlchemy). Each test case has been structured clearly with appropriate SQL queries to answer business questions related to channel revenue, user behavior, and product performance.</p>
+    </section>
+</div>
+
+<footer>
+    <p>&copy; 2024 Data Analysis Case Documentation</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+1. Pertama tama saya EDA dulu secara manual
+2. Kemudian saya melakukan promt ke chat gpt dengan memberitahu dataset yang saya pakai dan apa saja kolom kolom yang ada disana
+3. Dan pada akhirnya saya memasukkan promtseperti dibawah ini dan dilanjutkan eksplorasi:
+
+"Given a dataset from Google BigQuery with columns like fullVisitorId, channelGrouping, time, country, city, totalTransactionRevenue, transactions, productSKU, productRevenue, and more, how can we:
+
+Identify top products based on the total transaction revenue per day?
+Detect anomalies in the number of transactions for a specific product (e.g., sharp increase or decrease)?
+Identify the most profitable city or province based on total transaction revenue? Provide Python code for data processing using pandas to solve these."

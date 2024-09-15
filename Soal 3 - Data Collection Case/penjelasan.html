@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Collection Challenge Documentation</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 20px 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Heading Styles */
+        h1 {
+            font-size: 2.5em;
+            color: #3a3a3a;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.75em;
+            color: #5c6bc0;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #5c6bc0;
+            padding-bottom: 10px;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Text and Code Styles */
+        p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 1.5em;
+        }
+        pre, code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f9f9f9;
+            color: #d81b60;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        code {
+            padding: 5px 8px;
+            background-color: #f5f5f5;
+            font-size: 0.95em;
+            color: #d81b60;
+        }
+
+        /* List Styles */
+        ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Table of Contents Styles */
+        .toc {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .toc ul {
+            padding-left: 0;
+        }
+        .toc ul li {
+            list-style: none;
+            margin-bottom: 10px;
+        }
+        .toc ul li a {
+            text-decoration: none;
+            color: #5c6bc0;
+            font-weight: bold;
+        }
+        .toc ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Data Collection Challenge Documentation</h1>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#pendahuluan">1. Pendahuluan</a></li>
+                <li><a href="#teknologi">2. Teknologi yang Digunakan</a></li>
+                <li><a href="#arsitektur">3. Arsitektur dan Alur Kerja</a></li>
+                <li><a href="#instalasi">4. Instalasi dan Persiapan</a></li>
+                <li><a href="#implementasi">5. Implementasi</a></li>
+                <li><a href="#error">7. Error Handling</a></li>
+                <li><a href="#performa">8. Performa dan Efisiensi</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Sections -->
+        <div class="section" id="pendahuluan">
+            <h2>1. Pendahuluan</h2>
+            <p>Proyek ini bertujuan untuk mengumpulkan data dari situs web Fortiguard, secara khusus dari halaman yang berkaitan dengan ancaman keamanan. Proses ini dilakukan dengan melakukan scraping pada setiap level risiko dan mengumpulkan data berupa <code>title</code> (judul artikel) dan <code>link</code> (tautan langsung ke artikel).</p>
+        </div>
+
+        <div class="section" id="teknologi">
+            <h2>2. Teknologi yang Digunakan</h2>
+            <ul>
+                <li><strong>Python 3.x</strong></li>
+                <li>Libraries:
+                    <ul>
+                        <li><code>httpx</code>: Untuk melakukan permintaan HTTP secara asinkron.</li>
+                        <li><code>BeautifulSoup4</code>: Untuk parsing dan mengekstrak data dari HTML.</li>
+                        <li><code>polars</code>: Untuk menyimpan data dalam format CSV.</li>
+                        <li><code>tqdm</code>: Untuk progress bar saat scraping (opsional).</li>
+                        <li><code>json</code>: Untuk mencatat halaman yang dilewati (skipped pages).</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="section" id="arsitektur">
+            <h2>3. Arsitektur dan Alur Kerja</h2>
+            <h3>3.1 Input</h3>
+            <p>Situs web target adalah Fortiguard dengan struktur URL:</p>
+            <pre>https://www.fortiguard.com/encyclopedia?type=ips&risk={level}&page={page}</pre>
+            <p>Dimana:</p>
+            <ul>
+                <li><strong>level</strong>: Merupakan level risiko (nilai dari 1 hingga 5).</li>
+                <li><strong>page</strong>: Nomor halaman (mulai dari 1 hingga jumlah halaman maksimal).</li>
+            </ul>
+
+            <h3>3.2 Output</h3>
+            <p>Hasil scraping disimpan dalam format CSV di direktori <code>datasets/</code>:</p>
+            <ul>
+                <li><code>forti_lists_{level}.csv</code>: Berisi <code>title</code> dan <code>link</code>.</li>
+                <li><code>skipped.json</code>: Halaman-halaman yang gagal di-scrape.</li>
+            </ul>
+
+            <h3>3.3 Tahapan Utama</h3>
+            <ul>
+                <li><strong>Scraping:</strong> Proses asinkron menggunakan <code>httpx</code>.</li>
+                <li><strong>Ekstraksi Data:</strong> Menggunakan <code>BeautifulSoup</code> untuk mendapatkan <code>title</code> dan <code>link</code>.</li>
+                <li><strong>Pagination:</strong> Jumlah halaman diambil dari situs web atau menggunakan fallback ke 500 halaman.</li>
+                <li><strong>Error Handling:</strong> Halaman yang gagal diambil dicatat sebagai skipped, dan proses scraping berlanjut.</li>
+            </ul>
+        </div>
+
+        <div class="section" id="instalasi">
+            <h2>4. Instalasi dan Persiapan</h2>
+            <h3>4.1 Instalasi</h3>
+            <p>Pastikan Python 3.x terpasang, lalu instal dependencies:</p>
+            <pre><code>pip install httpx BeautifulSoup4 polars tqdm</code></pre>
+
+            <h3>4.2 Struktur Direktori</h3>
+            <pre>
+.
+├── datasets/                   # Direktori tempat menyimpan output
+├── scraper.py                  # File Python untuk scraping
+├── Dokumentasi-Pengerjaan.md   # Dokumentasi pengerjaan proyek ini
+└── README.md                   # Dokumentasi proyek ini
+            </pre>
+        </div>
+
+        <div class="section" id="implementasi">
+            <h2>5. Implementasi</h2>
+            <h3>5.1 Fungsi scrape_page</h3>
+            <pre><code>
+async def scrape_page(level, page):
+    url = f"https://www.fortiguard.com/encyclopedia?type=ips&risk={level}&page={page}"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
+            if response.status_code == 200:
+                return response.text
+            else:
+                return None
+    except httpx.RequestError as exc:
+        print(f"Error fetching {url}: {exc}")
+        return None
+            </code></pre>
+
+            <h3>5.2 Fungsi get_max_pages</h3>
+            <pre><code>
+def get_max_pages(html, fallback_max=500):
+    soup = BeautifulSoup(html, 'html.parser')
+    pagination = soup.find('ul', class_='pagination')
+    if pagination:
+        pages = pagination.find_all('li')
+        if pages:
+            last_page = pages[-2].text.strip()
+            try:
+                return int(last_page)
+            except ValueError:
+                pass
+    return fallback_max
+            </code></pre>
+
+            <h3>5.3 Fungsi parse_html</h3>
+            <pre><code>
+def parse_html(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    items = soup.find_all('div', attrs={'onclick': True})
+
+    data = []
+    for item in items:
+        onclick_value = item['onclick']
+        link = "https://www.fortiguard.com" + onclick_value.split("'")[1]
+
+        title_tag = item.find('b')
+        title = title_tag.text.strip() if title_tag else 'No Title'
+
+        data.append((title, link))
+    return data
+            </code></pre>
+        </div>
+
+        <div class="section" id="error">
+            <h2>7. Error Handling</h2>
+            <p>Jika terjadi kesalahan jaringan atau halaman tidak dapat diakses, skrip akan mencatat halaman tersebut dalam file <code>skipped.json</code>.</p>
+        </div>
+
+        <div class="section" id="performa">
+            <h2>8. Performa dan Efisiensi</h2>
+            <p>Scraping dilakukan secara asinkron menggunakan <code>httpx</code>, memungkinkan banyak permintaan bersamaan untuk meningkatkan efisiensi waktu scraping.</p>
+        </div>
+    </div>
+
+</body>
+</html>

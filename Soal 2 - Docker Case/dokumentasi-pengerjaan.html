@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dockerized API and ETL Services Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+        }
+        .container {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 1000px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #007bff;
+        }
+        code, pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        .code-block {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Dockerized API and ETL Services Documentation</h1>
+</header>
+
+<div class="container">
+    <h2>Table of Contents</h2>
+    <ol>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#project-structure">Project Structure</a></li>
+        <li><a href="#technologies-used">Technologies Used</a></li>
+        <li><a href="#setup-installation">Setup and Installation</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#detailed-explanation">Detailed Explanation of Files</a></li>
+        <li><a href="#running-project">Running the Project</a></li>
+        <li><a href="#expected-output">Expected Output</a></li>
+        <li><a href="#testing-modifications">Testing and Modifications</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+    </ol>
+
+    <h2 id="introduction">Introduction</h2>
+    <p>This project demonstrates the use of Docker to containerize two separate Python-based services:</p>
+    <ul>
+        <li>A FastAPI application acting as an API service.</li>
+        <li>An ETL (Extract, Transform, Load) script that communicates with the API to process data.</li>
+    </ul>
+    <p>Both services are managed via Docker Compose, ensuring they run in isolated environments but can still interact with each other seamlessly.</p>
+
+    <h2 id="project-structure">Project Structure</h2>
+    <pre class="code-block">
+|-- api/
+|   |-- api.py                # FastAPI application code
+|   |-- Dockerfile            # Dockerfile for the API service
+|   |-- requirements.txt      # Dependencies for FastAPI and Uvicorn
+|
+|-- etl/
+|   |-- etl.py                # ETL script to call the API
+|   |-- Dockerfile            # Dockerfile for the ETL service
+|   |-- requirements.txt      # Dependencies for the ETL service (httpx)
+|
+|-- docker-compose.yml        # Docker Compose configuration for both services
+|-- README.md                 # Project documentation
+    </pre>
+
+    <h2 id="technologies-used">Technologies Used</h2>
+    <ul>
+        <li><strong>Python 3.11.4</strong>: The programming language used for both services.</li>
+        <li><strong>FastAPI</strong>: A modern, fast web framework for building APIs with Python.</li>
+        <li><strong>Uvicorn</strong>: An ASGI server used to run the FastAPI app.</li>
+        <li><strong>HTTPX</strong>: An asynchronous HTTP client for making API requests from the ETL service.</li>
+        <li><strong>Docker</strong>: Used to containerize the services.</li>
+        <li><strong>Docker Compose</strong>: Orchestrates the API and ETL services.</li>
+    </ul>
+
+    <h2 id="setup-installation">Setup and Installation</h2>
+    <h3>Prerequisites</h3>
+    <ul>
+        <li>Docker: <a href="https://docs.docker.com/get-docker/">Install Docker</a></li>
+        <li>Docker Compose: <a href="https://docs.docker.com/compose/install/">Install Docker Compose</a></li>
+    </ul>
+    <h3>Steps to Install and Run</h3>
+    <p>Clone the repository and navigate to the project directory:</p>
+    <pre class="code-block">git clone https://your-repo-link.git
+cd your-repo-directory</pre>
+
+    <p>Build and start services:</p>
+    <pre class="code-block">docker-compose up --build</pre>
+
+    <p>To stop the services:</p>
+    <pre class="code-block">docker-compose down</pre>
+
+    <h2 id="how-it-works">How It Works</h2>
+    <p>The FastAPI service exposes an endpoint (/predict) that takes a text string as input, computes the MD5 hash of the string, and returns the remainder when divided by 4. The ETL service sends text sentences to the API, and logs the response.</p>
+
+    <h2 id="detailed-explanation">Detailed Explanation of Files</h2>
+    <h3>API Dockerfile</h3>
+    <pre class="code-block">
+# Use Python 3.11.4 as the base image
+FROM python:3.11.4
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY api.py .
+EXPOSE 6000
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "6000"]
+    </pre>
+
+    <h3>ETL Dockerfile</h3>
+    <pre class="code-block">
+# Use Python 3.11.4 as the base image
+FROM python:3.11.4
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY etl.py .
+CMD ["python", "etl.py"]
+    </pre>
+
+    <h3>Docker Compose</h3>
+    <pre class="code-block">
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+    ports:
+      - "6000:6000"
+    networks:
+      - my_network
+
+  etl:
+    build:
+      context: ./etl
+    depends_on:
+      - api
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
+    </pre>
+
+    <h2 id="running-project">Running the Project</h2>
+    <pre class="code-block">docker-compose up --build</pre>
+
+    <h2 id="expected-output">Expected Output</h2>
+    <pre class="code-block">
+INFO:     192.168.224.3:40466 - "POST /predict?text=Some%20text HTTP/1.1" 200 OK
+1
+INFO:     192.168.224.3:40480 - "POST /predict?text=Other%20text HTTP/1.1" 200 OK
+0
+    </pre>
+
+    <h2 id="testing-modifications">Testing and Modifications</h2>
+    <p>You can modify the list of sentences in <code>etl.py</code> to send different inputs to the API. After making changes, rebuild the containers using:</p>
+    <pre class="code-block">docker-compose up --build</pre>
+
+    <h2 id="troubleshooting">Troubleshooting</h2>
+    <h3>Port Conflicts</h3>
+    <p>If port 6000 is already in use, modify the port in <code>docker-compose.yml</code>:</p>
+    <pre class="code-block">
+ports:
+  - "6001:6000"
+    </pre>
+
+    <h2 id="conclusion">Conclusion</h2>
+    <p>This project demonstrates how to containerize two interdependent Python services using Docker and Docker Compose. The setup allows both services to run in isolation while communicating efficiently.</p>
+</div>
+
+<footer>
+    <p>&copy; 2024 Dockerized API and ETL Services Documentation</p>
+</footer>
+
+</body>
+</html>
